@@ -14,7 +14,7 @@
 <div class="wrap">
 <nav class="crumbs"><a href="index.html">&larr; back to the project</a> &middot; <a href="ab.html">A/B slider</a></nav>
 <h1>All samplers <span class="hl" id="total"></span></h1>
-<p class="sub">One clip per sampler &mdash; same seed, same weights, same everything. Click a video to play / pause. Samplers still rendering show a placeholder and appear here automatically the moment a clip lands in <code>videos/</code>.</p>
+<p class="sub">One clip per sampler &mdash; same seed, same weights, same everything. Click a video to play / pause. Render time is shown when logged; samplers without a log read <code>N/A</code>. Samplers still rendering show a placeholder and appear here automatically the moment a clip lands in <code>videos/</code>.</p>
 
 <div class="toolbar">
   <input type="search" id="q" placeholder="filter samplers&hellip;" autocomplete="off">
@@ -54,13 +54,15 @@ function visible() {
 
 function card(s) {
   const done = RENDERED.includes(s);
+  const t = TIMES[s];
+  const timeNote = t != null ? t + ' s' : 'N/A';
   if (done) {
     return '<div class="card done"><video src="videos/' + scene.id + '--' + s + '.mp4" ' +
       'poster="posters/' + scene.id + '--' + s + '.jpg" preload="metadata" muted loop playsinline></video>' +
-      '<div class="meta"><b>' + s + '</b><div class="note">rendered</div></div></div>';
+      '<div class="meta"><b>' + s + '</b><div class="note">rendered &middot; ' + timeNote + '</div></div></div>';
   }
   return '<div class="card"><div class="pending"><span class="clock">&#8987;</span><b>' + s + '</b>' +
-    '<span>still rendering&hellip;</span></div><div class="meta"><b>' + s + '</b><div class="note">pending</div></div></div>';
+    '<span>still rendering&hellip;</span></div><div class="meta"><b>' + s + '</b><div class="note">pending &middot; ' + timeNote + '</div></div></div>';
 }
 
 function render() {
@@ -86,8 +88,8 @@ function render() {
 $('q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); page = 1; render(); });
 $('onlyRendered').addEventListener('change', e => { only = e.target.checked; page = 1; render(); });
 
-// card size: default 1-up (biggest), remember choice
-let cols = +(localStorage.getItem('sg-cols') || 1);
+// card size: default 2-up (two videos per row), remember choice
+let cols = +(localStorage.getItem('sg-cols') || 2);
 function setCols(n) {
   cols = n;
   localStorage.setItem('sg-cols', n);

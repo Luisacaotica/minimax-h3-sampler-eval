@@ -60,6 +60,50 @@ def find_ffmpeg() -> str | None:
         return None
 
 
+def norm_name(name: str) -> str:
+    """'euler-cfg-pp' / 'euler cfg pp' -> 'euler_cfg_pp' (match data.js slugs)."""
+    return re.sub(r"[\s-]+", "_", name.strip().lower()).strip("_")
+
+
+def read_times(folder: Path, samplers: list[str]) -> dict[str, float]:
+    """Parse Time_taken.txt ('name - seconds' per line) into {sampler: seconds}."""
+    txt = folder / "Time_taken.txt"
+    times: dict[str, float] = {}
+    if not txt.exists():
+        return times
+    slugs = {norm_name(s): s for s in samplers}
+    for line in txt.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line or line.lower().startswith("in seconds") or line.startswith("#"):
+            continue
+        parts = line.rsplit(None, 1)
+        if len(parts) != 2:
+            print(f"  skip (unparseable): {line!r}")
+            continue
+        name, val = parts
+        try:
+            secs = float(val)
+        except ValueError:
+            print(f"  skip (bad seconds): {line!r}")
+            continue
+        slug = norm_name(re.sub(r"-\s*$", "", name))
+        s = slugs.get(slug)
+        if s is None:
+            print(f"  WARNING: '{line}' does not match any sampler in data.js")
+            continue
+        times[s] = secs
+    return times
+
+
+def times_block(times: dict[str, float]) -> str:
+    if not times:
+        return "const TIMES = {};"
+    inner = "".join(
+        f'  "{s}": {int(v) if float(v).is_integer() else v},\n' for s, v in times.items()
+    )
+    return "const TIMES = {\n" + inner + "};"
+
+
 def newest_match(folder: Path, sampler: str) -> Path | None:
     """Newest <sampler>[_NNNNN].mp4 in folder, or None."""
     cands = list(folder.glob(re.escape(sampler) + "_*.mp4")) + list(
@@ -130,6 +174,7 @@ def main() -> int:
     # report
     print(f"scene: {scene}   source: {source}")
     print(f"rendered: {len(new_rendered)}/{len(samplers)}")
+    print(f"times provided: {len(read_times(source, samplers))}")
     if args.dry_run:
         for x in updated:
             print("  copy  " + x)
@@ -142,15 +187,23 @@ def main() -> int:
     for x in made_posts:
         print("  poster " + x)
 
-    # rewrite RENDERED in data.js
+    # rewrite RENDERED + TIMES in data.js
     text = DATA.read_text(encoding="utf-8")
     block = "const RENDERED = [\n" + "".join(f'  "{r}",\n' for r in new_rendered) + "];"
     new_text, n = re.subn(r"const RENDERED = \[.*?\];", block, text, count=1, flags=re.S)
+
+    times = read_times(source, samplers)
+    new_text, n2 = re.subn(
+        r"const TIMES = \{.*?\};", times_block(times), new_text, count=1, flags=re.S
+    )
+    if n2 != 1:
+        print("WARNING: could not update TIMES in data.js — add 'const TIMES = {};' to data.js")
+
     if n != 1:
         print("WARNING: could not update RENDERED in data.js — edit it manually")
     else:
         DATA.write_text(new_text, encoding="utf-8")
-        print(f"updated data.js (RENDERED: {len(new_rendered)})")
+        print(f"updated data.js (RENDERED: {len(new_rendered)}, TIMES: {len(times)})")
 
     return 0
 
