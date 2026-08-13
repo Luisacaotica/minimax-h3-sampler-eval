@@ -282,14 +282,10 @@ const RENDERED = [
   "euler_ancestral",
   "euler_ancestral_cfg_pp",
   "heun",
+  "heunpp2",
   "res_multistep",
 ];
 
 // Render time in seconds per sampler, from Time_taken.txt.
 // Kept in sync via: python tools/sync_videos.py  (missing -> N/A on the site)
-const TIMES = {
-  "euler": 644,
-  "euler_cfg_pp": 321,
-  "euler_ancestral": 323,
-  "euler_ancestral_cfg_pp": 330,
-};
+const TIMES = {};
