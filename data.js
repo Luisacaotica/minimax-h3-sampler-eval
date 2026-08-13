@@ -283,6 +283,7 @@ const RENDERED = [
   "euler_ancestral_cfg_pp",
   "heun",
   "heunpp2",
+  "exp_heun_2_x0",
   "res_multistep",
 ];
 
