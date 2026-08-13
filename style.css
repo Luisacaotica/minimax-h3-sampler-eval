@@ -24,7 +24,7 @@ html, body { margin: 0; padding: 0; }
 body {
   background: #0d0f13 url('gfx/tiled_background.gif');
   color: var(--text);
-  font: 14px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
   padding: 22px 14px 40px;
   min-height: 100vh;
 }
@@ -34,7 +34,7 @@ a:hover { color: var(--pink-hi); }
 code { background: #1a1e27; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
 
 .wrap {
-  max-width: 1180px;
+  max-width: 1640px;
   margin: 0 auto;
   background: var(--panel);
   border: 1px solid var(--border);
@@ -51,7 +51,7 @@ h1 .hl { color: var(--pink); }
 h2 { font-size: 17px; margin: 22px 0 8px; }
 h3 { font-size: 14.5px; margin: 18px 0 6px; }
 
-p.sub { color: var(--muted); margin: 0 0 14px; max-width: 980px; }
+p.sub { color: var(--muted); margin: 0 0 14px; max-width: 1280px; }
 p.small { color: var(--faint); font-size: 12.5px; }
 
 .wip {
@@ -132,12 +132,11 @@ th:first-child, td:first-child { text-align: left; }
 th { background: #1a1e27; color: #b7c1cc; }
 td.mono, th.mono { font-family: ui-monospace, monospace; font-size: 12px; }
 
-details { color: var(--muted); margin: 6px 0 14px; }
-details pre { white-space: pre-wrap; font: 12px/1.5 ui-monospace, monospace;
-              background: #101318; padding: 10px 12px; border-radius: 8px; max-width: 1000px; }
+details { color: var(--muted); margin: 6px 0 14px; }  details pre { white-space: pre-wrap; font: 12px/1.5 ui-monospace, monospace;
+              background: #101318; padding: 10px 12px; border-radius: 8px; max-width: 1360px; }
 
 /* A/B stage */
-.stage { position: relative; max-width: 960px; margin: 4px 0 10px;
+.stage { position: relative; max-width: 1360px; margin: 4px 0 10px;
          border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #000;
          cursor: ew-resize; touch-action: none; user-select: none; }
 .stage video { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -152,7 +151,7 @@ details pre { white-space: pre-wrap; font: 12px/1.5 ui-monospace, monospace;
 .badge.l { left: 8px; } .badge.r { right: 8px; }
 .badge.hint { top: auto; bottom: 8px; left: 50%; transform: translateX(-50%);
               color: var(--muted); pointer-events: none; }
-.bar { display: flex; align-items: center; gap: 10px; max-width: 960px; margin-bottom: 8px;
+.bar { display: flex; align-items: center; gap: 10px; max-width: 1360px; margin-bottom: 8px;
        flex-wrap: wrap; }
 .bar input[type=range] { flex: 1; min-width: 200px; }
 .picks { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
