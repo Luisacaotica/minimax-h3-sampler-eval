@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>All samplers — MiniMax H3 sampler comparison</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdn.cursors-4u.net/cursors/animated/cute-ears-doll-girl-9aaba74d-32.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* card size is user-controlled; default to big single-column so clips are actually visible */
+  .grid { grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); }
+  .grid video, .grid .thumb, .grid .pending { aspect-ratio: 16/9; width: 100%; }
+  .sizes button { min-width: 34px; }
+</style>
+</head><body>
+<div class="wrap">
+<nav class="crumbs"><a href="index.html">&larr; back to the project</a> &middot; <a href="ab.html">A/B slider</a></nav>
+<h1>All samplers <span class="hl" id="total"></span></h1>
+<p class="sub">One clip per sampler &mdash; same seed, same weights, same everything. Click a video to play / pause. Samplers still rendering show a placeholder and appear here automatically the moment a clip lands in <code>videos/</code>.</p>
+
+<div class="toolbar">
+  <input type="search" id="q" placeholder="filter samplers&hellip;" autocomplete="off">
+  <label style="color:var(--muted);font-size:13px"><input type="checkbox" id="onlyRendered"> rendered only</label>
+  <span class="sizes">
+    <button data-cols="1" title="one big column">1</button>
+    <button data-cols="2" title="two columns">2</button>
+    <button data-cols="3" title="three columns">3</button>
+    <button data-cols="4" title="four columns">4</button>
+  </span>
+  <span class="spacer"></span>
+  <span class="count" id="count"></span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="pager" id="pager"></div>
+
+<footer>MiniMax&nbsp;H3 sampler sweep by <a href="https://github.com/Luisacaotica">LuisaCaotica</a> &middot; <a href="https://ko-fi.com/luisacaotica">ko-fi</a></footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const PER = 24;
+const scene = SCENES[0];
+let q = '', only = false, page = 1;
+
+$('total').textContent = '(' + SAMPLERS.length + ')';
+$('count').textContent = RENDERED.length + ' rendered \u00b7 ' + (SAMPLERS.length - RENDERED.length) + ' pending';
+
+function visible() {
+  return SAMPLERS
+    .filter(s => !q || s.includes(q.toLowerCase()))
+    .filter(s => !only || RENDERED.includes(s));
+}
+
+function card(s) {
+  const done = RENDERED.includes(s);
+  if (done) {
+    return '<div class="card done"><video src="videos/' + scene.id + '--' + s + '.mp4" ' +
+      'poster="posters/' + scene.id + '--' + s + '.jpg" preload="metadata" muted loop playsinline></video>' +
+      '<div class="meta"><b>' + s + '</b><div class="note">rendered</div></div></div>';
+  }
+  return '<div class="card"><div class="pending"><span class="clock">&#8987;</span><b>' + s + '</b>' +
+    '<span>still rendering&hellip;</span></div><div class="meta"><b>' + s + '</b><div class="note">pending</div></div></div>';
+}
+
+function render() {
+  const list = visible();
+  const pages = Math.max(1, Math.ceil(list.length / PER));
+  page = Math.min(page, pages);
+  const slice = list.slice((page - 1) * PER, page * PER);
+  $('grid').innerHTML = slice.map(card).join('');
+  const p = $('pager');
+  p.innerHTML =
+    '<button class="nav" id="pg-prev" ' + (page <= 1 ? 'disabled' : '') + '><img src="gfx/navigation_back_button.gif" alt="previous page"></button>' +
+    '<span class="pageinfo">page <b>' + page + '</b> / ' + pages + ' &middot; ' + list.length + ' shown</span>' +
+    '<button class="nav" id="pg-next" ' + (page >= pages ? 'disabled' : '') + '><img src="gfx/navigation_next_button.gif" alt="next page"></button>';
+  $('pg-prev').addEventListener('click', () => { if (page > 1) { page--; render(); } });
+  $('pg-next').addEventListener('click', () => { if (page < pages) { page++; render(); } });
+  // click to play / pause
+  document.querySelectorAll('#grid video').forEach(v => v.addEventListener('click', () => {
+    v.muted = false;
+    v.paused ? v.play() : v.pause();
+  }));
+}
+
+$('q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); page = 1; render(); });
+$('onlyRendered').addEventListener('change', e => { only = e.target.checked; page = 1; render(); });
+
+// card size: default 1-up (biggest), remember choice
+let cols = +(localStorage.getItem('sg-cols') || 1);
+function setCols(n) {
+  cols = n;
+  localStorage.setItem('sg-cols', n);
+  document.querySelector('.grid').style.setProperty('--cols', n);
+  document.querySelectorAll('.sizes button').forEach(b => b.classList.toggle('on', +b.dataset.cols === n));
+}
+document.querySelectorAll('.sizes button').forEach(b => b.addEventListener('click', () => setCols(+b.dataset.cols)));
+setCols(cols);
+
+render();
+</script>
+</body></html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>MiniMax H3 — Sampler comparison</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdn.cursors-4u.net/cursors/animated/cute-ears-doll-girl-9aaba74d-32.css">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<div class="wrap">
+<header class="site">
+  <div>
+    <h1>MiniMax&nbsp;H3 <span class="hl">&mdash;</span> Sampler comparison</h1>
+    <p class="sub">Every sampler of <a href="https://www.minimax.io/blog/minimax-h3">MiniMax&nbsp;H3</a> rendered on the same clip, same seed, same settings &mdash; so the <em>only</em> thing that changes between videos is the sampler. A stress-test sweep to see which samplers hold up on <b>The Yellow King &mdash; Multishot Test</b>.</p>
+  </div>
+  <span class="wip">W.I.P.</span>
+</header>
+
+<p class="sub">One scene, 241 samplers. Browse them all <a href="samplers.html">side by side</a>, or use the <a href="ab.html">A/B slider</a> to wipe between any two and switch which one you hear.</p>
+<div class="controls">
+  <a href="samplers.html"><button>All samplers &rarr;</button></a>
+  <a href="ab.html"><button>A/B slider tool</button></a>
+</div>
+
+<hr class="divider">
+
+<h2>The test</h2>
+<p class="sub" id="scene-blurb"></p>
+<table id="cfg-table"></table>
+
+<h2>Render environment</h2>
+<table>
+  <tr><th>Item</th><th>Value</th></tr>
+  <tr><td>Hardware</td><td>NVIDIA GeForce RTX 4060 Ti (8&nbsp;GB) &middot; 32&nbsp;GB RAM &middot; AMD Ryzen 5 5600X</td></tr>
+  <tr><td>Software</td><td>EZI ComfyUI v3.13.0 &middot; ComfyUI v0.32.0 &middot; Python 3.12.10 &middot; PyTorch 2.13 &middot; CUDA 13.0</td></tr>
+  <tr><td>Attention</td><td>auto SageAttention &middot; Sol-Attn on &middot; chunked feedforward (4 chunks, seq threshold 4096)</td></tr>
+  <tr><td>Page file</td><td>64000 MB configured (32000 MB current)</td></tr>
+</table>
+
+<hr class="divider">
+
+<h2>Models</h2>
+<table>
+  <tr><th>Role</th><th>Model / file</th></tr>
+  <tr><td>Frame model</td><td class="mono"><a href="https://huggingface.co/lilcheaty/MiniMax-H3-NVFP4/resolve/main/minimax_h3_fl2va_pruned_nvfp4.safetensors?download=true">minimax_h3_fl2va_pruned_nvfp4.safetensors</a> (lilcheaty)</td></tr>
+  <tr><td>Ref model</td><td class="mono"><a href="https://huggingface.co/lilcheaty/MiniMax-H3-NVFP4/resolve/main/minimax_h3_ref2va_pruned_nvfp4.safetensors?download=true">minimax_h3_ref2va_pruned_nvfp4.safetensors</a> (lilcheaty)</td></tr>
+  <tr><td>Qwen 3 VL 8B (CLIP)</td><td class="mono"><a href="https://huggingface.co/SergiusFlavius/Qwen3-VL-8B-Instruct-heretic-NVFP4/resolve/main/qwen3_vl_8b_nvfp4_full.safetensors?download=true">qwen3_vl_8b_nvfp4_full.safetensors</a> (SergiusFlavius)</td></tr>
+  <tr><td>CLIP projection</td><td class="mono"><a href="https://huggingface.co/NicoLab28/ClipProj-MiniMax-H3/resolve/main/mmh3-8b-ClipProj-celeb-mlp.safetensors?download=true">mmh3-8b-ClipProj-celeb-mlp.safetensors</a> (NicoLab28)</td></tr>
+  <tr><td>Turbo LoRA</td><td class="mono"><a href="https://huggingface.co/larryvrh/MiniMax-H3-Turbo-Lora/resolve/main/minimax_h3_turbo_v4_step600_ema.safetensors?download=true">minimax_h3_turbo_v4_step600_ema.safetensors</a> (larryvrh) &middot; strength 1.0</td></tr>
+  <tr><td>External LoRA</td><td class="mono">h3-realism-people-t2v-i2v-r2v.safetensors &middot; strength 0.6</td></tr>
+</table>
+
+<hr class="divider">
+
+<h2>Status</h2>
+<p class="sub" id="status"></p>
+
+<div class="env">
+  <b>Author:</b> <a href="https://github.com/Luisacaotica">LuisaCaotica</a> &middot; rendered locally on an RTX&nbsp;4060&nbsp;Ti (8&nbsp;GB) with EZI ComfyUI v3.13.0 / ComfyUI v0.32.0.<br>
+  <span class="envnote">Project / video name: The Yellow King, Multishot Test. All clips 6&nbsp;s &middot; 0.4&nbsp;MP (16:9) &middot; 32 frames &middot; 24&nbsp;fps &middot; scheduler fixed at sgm_uniform.</span>
+</div>
+
+<div class="thanks">
+  <img src="gfx/thankyou_bar.gif" alt="thank you" width="160" height="90">
+  <span>Enjoying the test? <a href="https://ko-fi.com/luisacaotica">Buy me a coffee &hearts;</a></span>
+</div>
+
+<footer>MiniMax&nbsp;H3 sampler sweep by <a href="https://github.com/Luisacaotica">LuisaCaotica</a> &middot;
+built as a scaffold &mdash; more renders land as they finish rendering.</footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const scene = SCENES[0];
+
+$('scene-blurb').textContent =
+  scene.title + ' \u2014 ' + scene.note + '. All ' + SAMPLERS.length + ' samplers share the exact same graph, weights, prompt and seed; only the sampler changes between clips.';
+
+const fixed = [
+  ['Checkpoint', 'MiniMax_H3_Ref2VA_pruned_nvfp4.safetensors'],
+  ['Turbo LoRA', 'minimax_h3_turbo_v4_step600_ema.safetensors \u00b7 strength 1.0'],
+  ['CLIP', 'qwen3vl_8b_nvfp4_full.safetensors + mmh3-8b-ClipProj-celeb-mlp.safetensors (Clip Proj Loader)'],
+  ['External LoRA', 'h3-realism-people-t2v-i2v-r2v.safetensors \u00b7 strength 0.6'],
+  ['Scheduler', 'sgm_uniform (fixed)'],
+  ['Resolution', '0.4 MP 16:9 \u00b7 32 frames \u00b7 24 fps \u00b7 6 s'],
+];
+$('cfg-table').innerHTML = '<tr><th>Setting</th><th>Value</th></tr>' +
+  fixed.map(r => '<tr><td>' + r[0] + '</td><td class="mono">' + r[1] + '</td></tr>').join('');
+
+const pending = SAMPLERS.length - RENDERED.length;
+$('status').innerHTML =
+  '<b>' + RENDERED.length + '/' + SAMPLERS.length + ' samplers rendered</b> &middot; ' + pending + ' pending (videos still cooking). ' +
+  '<a href="samplers.html">See the grid</a> \u2014 missing clips show a placeholder until they finish rendering.';
+</script>
+</body></html>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>A/B slider — MiniMax H3 sampler comparison</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdn.cursors-4u.net/cursors/animated/cute-ears-doll-girl-9aaba74d-32.css">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<div class="wrap">
+<nav class="crumbs"><a href="index.html">&larr; back to the project</a> &middot; <a href="samplers.html">all samplers</a></nav>
+<h1>A/B slider</h1>
+<p class="sub">Two samplers overlaid on the same clip, in sync. <b>Drag anywhere on the video</b> to wipe between them (double-click to recentre), and switch which one you <b>hear</b> &mdash; only one side is audible at a time. Keys: <code>space</code> play, <code>&larr;</code>/<code>&rarr;</code> wipe (hold shift for bigger steps), <code>a</code>/<code>b</code> audio side, <code>s</code> swap.</p>
+<p class="sub" id="hint" style="display:none"></p>
+<div class="picks">
+  <span class="mono">left / A</span><select id="ca"></select>
+  <span class="mono">right / B</span><select id="cb"></select>
+  <button id="swap">&#8646; swap</button>
+</div>
+<p class="sub" id="scene-line"></p>
+<div class="stage" id="stage">
+  <div class="spacer"></div>
+  <video id="va" playsinline loop preload="metadata"></video>
+  <div id="clip" style="position:absolute;inset:0"><video id="vb" playsinline loop preload="metadata"></video></div>
+  <div id="handle"></div>
+  <span class="badge l">A</span><span class="badge r">B</span>
+  <span class="badge hint">drag to wipe &middot; <span id="pct">50%</span></span>
+</div>
+<div class="bar">
+  <button id="play">&#9654; Play</button>
+  <button id="restart">&#8635; Restart</button>
+  <input type="range" id="seek" min="0" max="100" value="0" step="0.1">
+  <span class="mono" id="time">0.00 / 0.00 s</span>
+</div>
+<div class="bar"><span class="mono">audio</span><button id="audioA">hear A</button><button id="audioB">hear B</button></div>
+
+<footer>MiniMax&nbsp;H3 sampler sweep by <a href="https://github.com/Luisacaotica">LuisaCaotica</a> &middot; <a href="https://ko-fi.com/luisacaotica">ko-fi</a></footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const scene = SCENES[0];
+const A = $('va'), B = $('vb');
+
+function fill(sel, opts, val) {
+  sel.innerHTML = opts.map(o => '<option value="' + o + '">' + o + '</option>').join('');
+  if (val) sel.value = val;
+}
+if (RENDERED.length === 0) {
+  $('hint').style.display = '';
+  $('hint').textContent = 'No clips rendered yet \u2014 drop videos into videos/ and run tools/sync_videos.py, then this tool lights up.';
+}
+$('hint').style.display = RENDERED.length < 2 ? '' : 'none';
+if (RENDERED.length < 2) {
+  $('hint').textContent = RENDERED.length === 0
+    ? 'No clips rendered yet \u2014 the A/B tool needs at least two. Videos still cooking!'
+    : 'Only one clip rendered so far (' + RENDERED[0] + ') \u2014 the A/B tool needs at least two. More renders coming!';
+}
+fill($('ca'), RENDERED, RENDERED[0]);
+fill($('cb'), RENDERED, RENDERED[1] || RENDERED[0]);
+$('scene-line').textContent = 'Scene: ' + scene.title + ' \u00b7 ' + scene.note;
+
+function load() {
+  A.src = 'videos/' + scene.id + '--' + $('ca').value + '.mp4';
+  B.src = 'videos/' + scene.id + '--' + $('cb').value + '.mp4';
+  A.poster = 'posters/' + scene.id + '--' + $('ca').value + '.jpg';
+  B.poster = 'posters/' + scene.id + '--' + $('cb').value + '.jpg';
+  A.load(); B.load();
+  A.currentTime = 0; B.currentTime = 0;
+  setAudio(audioSide);
+}
+['ca', 'cb'].forEach(id => $(id).addEventListener('change', load));
+
+// --- wipe: dragged directly on the video ------------------------------------
+let wipePct = 50;
+function wipe(pct) {
+  wipePct = Math.max(0, Math.min(100, pct));
+  $('clip').style.clipPath = 'inset(0 0 0 ' + wipePct + '%)';
+  $('handle').style.left = wipePct + '%';
+  $('pct').textContent = Math.round(wipePct) + '%';
+}
+const stage = $('stage');
+function wipeFromEvent(e) {
+  const r = stage.getBoundingClientRect();
+  wipe(((e.clientX - r.left) / r.width) * 100);
+}
+let dragging = false;
+stage.addEventListener('pointerdown', e => {
+  dragging = true; stage.setPointerCapture(e.pointerId); wipeFromEvent(e); e.preventDefault();
+});
+stage.addEventListener('pointermove', e => { if (dragging) wipeFromEvent(e); });
+['pointerup', 'pointercancel'].forEach(t =>
+  stage.addEventListener(t, e => { dragging = false; stage.releasePointerCapture(e.pointerId); }));
+stage.addEventListener('dblclick', () => wipe(50));
+
+// --- transport: B follows A -------------------------------------------------
+function sync() { if (Math.abs(B.currentTime - A.currentTime) > 0.04) B.currentTime = A.currentTime; }
+A.addEventListener('timeupdate', () => {
+  sync();
+  $('seek').value = A.duration ? (A.currentTime / A.duration) * 100 : 0;
+  $('time').textContent = A.currentTime.toFixed(2) + ' / ' + (A.duration || 0).toFixed(2) + ' s';
+});
+$('play').addEventListener('click', () => {
+  if (A.paused) { sync(); A.play(); B.play(); $('play').textContent = '\u275A\u275A Pause'; }
+  else { A.pause(); B.pause(); $('play').textContent = '\u25B6 Play'; }
+});
+$('restart').addEventListener('click', () => {
+  A.currentTime = 0; B.currentTime = 0; A.play(); B.play(); $('play').textContent = '\u275A\u275A Pause';
+});
+$('seek').addEventListener('input', e => {
+  if (!A.duration) return;
+  A.currentTime = (e.target.value / 100) * A.duration; sync();
+});
+A.addEventListener('ended', () => { $('play').textContent = '\u25B6 Play'; });
+
+// --- audio: exactly one side audible ---------------------------------------
+let audioSide = 'A';
+function setAudio(side) {
+  audioSide = side;
+  A.muted = side !== 'A'; B.muted = side !== 'B';
+  $('audioA').classList.toggle('on', side === 'A');
+  $('audioB').classList.toggle('on', side === 'B');
+}
+$('audioA').addEventListener('click', () => setAudio('A'));
+$('audioB').addEventListener('click', () => setAudio('B'));
+$('swap').addEventListener('click', () => {
+  const a = $('ca').value; $('ca').value = $('cb').value; $('cb').value = a; load();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'SELECT') return;
+  if (e.code === 'Space') { e.preventDefault(); $('play').click(); }
+  if (e.key === 'a') setAudio('A');
+  if (e.key === 'b') setAudio('B');
+  if (e.key === 's') $('swap').click();
+  if (e.key === 'ArrowLeft') { e.preventDefault(); wipe(wipePct - (e.shiftKey ? 10 : 2)); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); wipe(wipePct + (e.shiftKey ? 10 : 2)); }
+});
+
+wipe(50); load(); setAudio('A');
+</script>
+</body></html>
