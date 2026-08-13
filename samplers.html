@@ -5,10 +5,12 @@
 <link rel="stylesheet" href="https://cdn.cursors-4u.net/cursors/animated/cute-ears-doll-girl-9aaba74d-32.css">
 <link rel="stylesheet" href="style.css">
 <style>
-  /* card size is user-controlled; default to big single-column so clips are actually visible */
-  .grid { grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); }
+  /* grid density is user-controlled: columns x rows (default 3 x 2) */
+  .grid { grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); }
   .grid video, .grid .thumb, .grid .pending { aspect-ratio: 16/9; width: 100%; }
-  .sizes button { min-width: 34px; }
+  .layout { display: inline-flex; align-items: center; gap: 8px; }
+  .layout label { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12.5px; }
+  .layout select { padding: 5px 8px; }
 </style>
 </head><body>
 <div class="wrap">
@@ -19,11 +21,9 @@
 <div class="toolbar">
   <input type="search" id="q" placeholder="filter samplers&hellip;" autocomplete="off">
   <label style="color:var(--muted);font-size:13px"><input type="checkbox" id="onlyRendered"> rendered only</label>
-  <span class="sizes">
-    <button data-cols="1" title="one big column">1</button>
-    <button data-cols="2" title="two columns">2</button>
-    <button data-cols="3" title="three columns">3</button>
-    <button data-cols="4" title="four columns">4</button>
+  <span class="layout">
+    <label>cols <select id="colsSel"></select></label>
+    <label>rows <select id="rowsSel"></select></label>
   </span>
   <span class="spacer"></span>
   <span class="count" id="count"></span>
@@ -47,7 +47,7 @@
 <script src="data.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-const PER = 24;
+let PER = 6;  // page size = cols x rows, set by the layout control
 const scene = SCENES[0];
 let q = '', only = false, page = 1;
 
@@ -136,17 +136,28 @@ $('playAll').addEventListener('click', () => {
 $('q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); page = 1; render(); });
 $('onlyRendered').addEventListener('change', e => { only = e.target.checked; page = 1; render(); });
 
-// card size: default 2-up (two videos per row), remember choice
-let cols = +(localStorage.getItem('sg-cols') || 2);
-function setCols(n) {
-  cols = n;
-  localStorage.setItem('sg-cols', n);
-  document.querySelector('.grid').style.setProperty('--cols', n);
-  document.querySelectorAll('.sizes button').forEach(b => b.classList.toggle('on', +b.dataset.cols === n));
+// grid layout: user picks columns and rows; page size = cols x rows
+function fillSel(sel, n) {
+  sel.innerHTML = Array.from({ length: n }, (_, i) => '<option value="' + (i + 1) + '">' + (i + 1) + '</option>').join('');
 }
-document.querySelectorAll('.sizes button').forEach(b => b.addEventListener('click', () => setCols(+b.dataset.cols)));
-setCols(cols);
-
-render();
+fillSel($('colsSel'), 6);
+fillSel($('rowsSel'), 6);
+let cols = +(localStorage.getItem('sg-cols') || 3);
+let rows = +(localStorage.getItem('sg-rows') || 2);
+$('colsSel').value = cols;
+$('rowsSel').value = rows;
+function applyLayout() {
+  cols = +$('colsSel').value;
+  rows = +$('rowsSel').value;
+  PER = cols * rows;
+  localStorage.setItem('sg-cols', cols);
+  localStorage.setItem('sg-rows', rows);
+  document.querySelector('.grid').style.setProperty('--cols', cols);
+  page = 1;
+  render();
+}
+$('colsSel').addEventListener('change', applyLayout);
+$('rowsSel').addEventListener('change', applyLayout);
+applyLayout();
 </script>
 </body></html>
