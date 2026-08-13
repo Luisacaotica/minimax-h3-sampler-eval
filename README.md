@@ -31,6 +31,11 @@ tools/sync_videos.py                 copy ComfyUI renders in, keep data.js in sy
 
 ## Adding new renders
 
+**Easiest:** double-click `update.bat` (sits in the repo root). It scans your
+default output folder (the `samplertest` folder next to the site) for new clips,
+copies them in, and asks if you want to push to GitHub. Change the `SOURCE` line
+at the top if your renders live elsewhere.
+
 ComfyUI writes clips as `<sampler>_00001.mp4` into its output folder
 (e.g. `res_multistep_00001.mp4`). Drop the renders wherever you like, then:
 
