@@ -277,5 +277,8 @@ const SAMPLERS = [
 // Samplers with a rendered clip in videos/<scene>--<sampler>.mp4.
 // Keep in sync via: python tools/sync_videos.py
 const RENDERED = [
+  "euler",
+  "euler_cfg_pp",
+  "euler_ancestral",
   "res_multistep",
 ];
