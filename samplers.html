@@ -29,6 +29,14 @@
   <span class="count" id="count"></span>
 </div>
 
+<div class="bar" id="syncbar" style="max-width:none">
+  <span class="mono" style="min-width:0">frame&nbsp;sync</span>
+  <button id="playAll" title="play / pause every visible video in sync (muted)">&#9654; Play all</button>
+  <input type="range" id="frame" min="0" max="1000" value="0" step="1" title="scrub every visible video to the same frame">
+  <span class="mono" id="ftime">0.00 / 0.00 s</span>
+  <span class="count" id="syncnote" style="margin-left:auto"></span>
+</div>
+
 <div class="grid" id="grid"></div>
 
 <div class="pager" id="pager"></div>
@@ -78,12 +86,52 @@ function render() {
     '<button class="nav" id="pg-next" ' + (page >= pages ? 'disabled' : '') + '><img src="gfx/navigation_next_button.gif" alt="next page"></button>';
   $('pg-prev').addEventListener('click', () => { if (page > 1) { page--; render(); } });
   $('pg-next').addEventListener('click', () => { if (page < pages) { page++; render(); } });
-  // click to play / pause
-  document.querySelectorAll('#grid video').forEach(v => v.addEventListener('click', () => {
-    v.muted = false;
-    v.paused ? v.play() : v.pause();
-  }));
+  // click to play / pause (and unmute just that one, so you can hear a single sampler)
+  document.querySelectorAll('#grid video').forEach(v => {
+    v.addEventListener('click', () => { v.muted = false; v.paused ? v.play() : v.pause(); });
+    // frame sync: seek this video to the global position once its metadata loads
+    v.addEventListener('loadedmetadata', () => { if (gPct > 0) seekTo(v, gPct); });
+    // while playing, the slider follows the first visible clip
+    v.addEventListener('timeupdate', () => {
+      if (v === videos()[0] && !draggingFrame) {
+        $('frame').value = v.duration ? (v.currentTime / v.duration) * 1000 : 0;
+        syncTimeLabel();
+      }
+      if (allPlaying && v.ended && v === videos()[0]) { allPlaying = false; $('playAll').textContent = '\u25B6 Play all'; }
+    });
+  });
+  const vs = videos();
+  $('playAll').disabled = vs.length === 0;
+  $('frame').disabled = vs.length === 0;
+  $('syncnote').textContent = vs.length ? vs.length + ' clips in sync' : 'no clips on this page';
 }
+
+// --- frame sync: one slider scrubs every visible video ----------------------
+let gPct = 0, draggingFrame = false, allPlaying = false;
+const videos = () => [...document.querySelectorAll('#grid video')];
+
+function seekTo(v, pct) {
+  if (v.duration && isFinite(v.duration)) v.currentTime = (pct / 1000) * v.duration;
+}
+function syncTimeLabel() {
+  const v = videos()[0];
+  const t = v && v.duration ? v.currentTime : 0;
+  const d = v && v.duration ? v.duration : 0;
+  $('ftime').textContent = t.toFixed(2) + ' / ' + d.toFixed(2) + ' s';
+}
+$('frame').addEventListener('input', e => {
+  gPct = +e.target.value;
+  if (allPlaying) { allPlaying = false; $('playAll').textContent = '\u25B6 Play all'; videos().forEach(v => v.pause()); }
+  videos().forEach(v => seekTo(v, gPct));
+  syncTimeLabel();
+});
+$('frame').addEventListener('pointerdown', () => draggingFrame = true);
+['pointerup', 'pointercancel'].forEach(t => $('frame').addEventListener(t, () => draggingFrame = false));
+$('playAll').addEventListener('click', () => {
+  allPlaying = !allPlaying;
+  videos().forEach(v => { v.muted = true; allPlaying ? v.play() : v.pause(); });
+  $('playAll').textContent = allPlaying ? '\u275A\u275A Pause all' : '\u25B6 Play all';
+});
 
 $('q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); page = 1; render(); });
 $('onlyRendered').addEventListener('change', e => { only = e.target.checked; page = 1; render(); });
