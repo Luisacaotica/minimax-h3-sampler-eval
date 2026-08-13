@@ -26,6 +26,13 @@
 <p class="sub" id="scene-blurb"></p>
 <table id="cfg-table"></table>
 
+<h2>The prompt</h2>
+<p class="sub">Every clip in this comparison was rendered from the <em>exact same</em> prompt &mdash; same seed, same weights, same settings. Only the sampler changes between videos.</p>
+<details>
+  <summary>Show the full prompt</summary>
+  <pre id="prompt"></pre>
+</details>
+
 <h2>Render environment</h2>
 <table>
   <tr><th>Item</th><th>Value</th></tr>
@@ -85,6 +92,8 @@ const fixed = [
 ];
 $('cfg-table').innerHTML = '<tr><th>Setting</th><th>Value</th></tr>' +
   fixed.map(r => '<tr><td>' + r[0] + '</td><td class="mono">' + r[1] + '</td></tr>').join('');
+
+$('prompt').textContent = scene.prompt;
 
 const pending = SAMPLERS.length - RENDERED.length;
 $('status').innerHTML =

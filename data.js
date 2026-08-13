@@ -8,6 +8,23 @@ const SCENES = [
     id: "yellow-king",
     title: "The Yellow King — Multishot Test",
     note: "6 s · 0.4 MP (16:9) · 32 frames @ 24 fps · scheduler sgm_uniform",
+    prompt: `subject_definitions: S1 is a young woman with messy curly ginger hair, dark lipstick, black neck tattoos, and an oversized black cotton t-shirt.
+
+summary: ASTROCINEMAV01K2T. A rapid Photorealistic live-action cinematic horror trailer sequence thriller in 16:9 widescreen, follows S1 discovering forbidden cosmic knowledge, leading to a confrontation with a giant crowned entity and a descent into madness. Hard cuts between shots, no dissolves.
+
+detailed_description: Gritty 16mm analog film look with prominent grain, heavy shadow contrast, harsh directional tungsten lighting, desaturated sickly greens balanced with vivid yellow highlights, and energetic handheld camera motion.
+
+[Shot 1] Medium shot of S1 inside a dark wood-paneled study illuminated by one overhead bulb. Action: S1 frantically flips through one heavy leather book filled with yellow parchment pages, her hands trembling as her eyes widen in fear. Effect: Dust motes swirl through one golden beam of light.
+
+[Shot 2] The video cuts directly to a low-angle close-up of a towering figure draped in ragged yellow silk robes wearing one jagged iron crown. Action: The masked entity slowly tilts its head down toward the lens. Effect: Two piercing yellow lights ignite inside the dark shadow beneath the crown.
+
+[Shot 3] The video cuts directly to an extreme wide shot of a infinite plain water with a dark castle in horizon, multiple black holes in sky are taking the castle and enviroment appart.
+
+[Shot 4] The video cuts directly to a tracking handheld on S1 street road seeing multiple motionless people just hanging in middle air, heavy thunderstorm on horizon, extremely wind enviroment.
+
+overall_soundscape: Shot 1: Rapid paper rustling and heavy anxious breathing. Shot 2: Deep low-frequency throat hum and a loud wooden snap sound. Shot 3: Howling desert wind and a deep vibrating bass rumble. Shot 4: Loud crackling fire, rapid footsteps breaking dry twigs, and a sharp gasp.
+
+non_diegetic_music: A haunting indie horror score featuring heavy sub-bass synth drones, screeching violin swells, reversed piano chords, and thunderous drum hits that stop abruptly at the final frame.`,
   },
 ];
 
