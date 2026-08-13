@@ -284,9 +284,14 @@ const RENDERED = [
   "heun",
   "heunpp2",
   "exp_heun_2_x0",
+  "exp_heun_2_x0_sde",
+  "dpm_2",
   "res_multistep",
 ];
 
 // Render time in seconds per sampler, from Time_taken.txt.
 // Kept in sync via: python tools/sync_videos.py  (missing -> N/A on the site)
-const TIMES = {};
+const TIMES = {
+  "exp_heun_2_x0_sde": 492,
+  "dpm_2": 497,
+};
